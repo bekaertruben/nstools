@@ -1,0 +1,22 @@
+census_weights:
+  Civil Rights: 3
+  Economy: 3
+  Political Freedom: 3
+  Crime: -1
+  Death Rate: -1
+  Wealth Gaps: -1
+  Ignorance: -1
+  Political Apathy: -1
+  Rudeness: -1
+  Corruption: -1
+  Authoritarianism: -1
+  Youth Rebelliousness: -1
+  Obesity: -1
+  Charmlessness: -1
+  Black Market: -1
+  
+policy_weights:
+  No Internet: -10
+  Metricism: 5
+
+allow_WA_resignation: False

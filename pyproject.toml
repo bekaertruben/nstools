@@ -1,0 +1,31 @@
+[project]
+name = "nstools"
+version = "0.0.1"
+description = "A collection of tools to build projects for NationStates"
+authors = [
+    { name = "Ruben Bekaert", email = "bekaertruben@gmail.com" }
+]
+license = { text = "MIT" }
+dependencies = [
+    "requests >= 2.32.3",
+    "xmltodict >= 0.14.2",
+    "lxml >= 5.3.0",
+]
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+async = [
+    "aiohttp >= 3.11.11",
+]
+demo = [
+    "rich >= 13.9.4",
+    "pandas >= 2.2.3",
+    "pyarrow >= 18.1.0",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["nstools"]
