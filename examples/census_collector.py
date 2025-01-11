@@ -30,7 +30,7 @@ nation_names = api.shard("nations").split(",")
 
 nation_dicts = []
 
-logfile = open("census-collector.log", "w")
+logfile = open("census_collector.log", "w")
 console = rich.console.Console(file=logfile, force_terminal=True)
 
 progress = rich.progress.Progress(
@@ -44,7 +44,9 @@ progress = rich.progress.Progress(
 nation_tracker = progress.add_task("Gathering nation data", total=len(nation_names))
 progress.start()
 
-for i, name in enumerate(nation_names, start=1):
+for i, name in enumerate(nation_tracker, start=1):
+    progress.update(nation_tracker, advance=1)
+
     try:
         nation_api = api.nation(name)
         nation_dicts.append(Nation(nation_api).dict())

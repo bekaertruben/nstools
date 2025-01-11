@@ -8,7 +8,7 @@ I may also implement abstractions for working with cards.
 
 ## Installation
 
-To install NSTools, clone the repository and install the dependencies:
+To install NSTools, run the following command:
 
 ```sh
 pip install git+https://github.com/bekaertruben/nstools
