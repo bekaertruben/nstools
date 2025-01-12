@@ -106,7 +106,7 @@ class RateLimitedClient:
         # remove html special characters that are not also xml special characters
         # sometimes the API returns HTML entities in the XML response (e.g. &eacute;)
         # which cause errors in XML parsing
-        text = response.content.decode('utf-8')
+        text = unescape(response.content.decode('utf-8'))
 
         if response.status_code == 200: # OK
             response_headers = response.headers
