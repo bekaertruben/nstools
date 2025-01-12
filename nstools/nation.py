@@ -150,13 +150,19 @@ class Issue:
         self.text = api_response['TEXT']
         self.author = api_response['AUTHOR']
         self.editor = api_response['EDITOR'] if 'EDITOR' in api_response else None
-        self.pictures = (api_response['PIC1'], api_response['PIC2'])
         self.options = {
             int(option['@id']): option['#text']
             for option in api_response['OPTION']
         }
         self.open = True
 
+        pictures = []
+        i = 1
+        while f"PIC{i}" in api_response:
+            pictures.append(api_response[f"PIC{i}"])
+            i += 1
+        self.pictures = tuple(pictures)
+        
     def answer(self, option_id: int):
         """ Answer the issue """
         assert self.open, "Issue is already answered"
