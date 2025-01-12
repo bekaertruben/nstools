@@ -1,7 +1,7 @@
+from nstools.utils import *
 import requests
 import xmltodict
 import logging
-from nstools.utils import *
 import time
 import datetime
 
@@ -80,14 +80,14 @@ class RateLimitedClient:
 
         query = "&".join([f"{k}={format_for_query(v)}" for k, v in kwargs.items()])
         url = f"https://www.nationstates.net/cgi-bin/api.cgi?{query}"
-        request = self.session.get(url, headers=headers)
+        response = self.session.get(url, headers=headers)
         self.remaining_requests -= 1
 
         # Check headers for rate limit information
-        date = request.headers.get("Date")
-        policy = request.headers.get("Ratelimit-Policy")
-        seconds_until_reset = int(request.headers.get('Ratelimit-Reset'))
-        remaining = int(request.headers.get('RateLimit-Remaining'))
+        date = response.headers.get("Date")
+        policy = response.headers.get("Ratelimit-Policy")
+        seconds_until_reset = int(response.headers.get('Ratelimit-Reset'))
+        remaining = int(response.headers.get('RateLimit-Remaining'))
 
         # If the rate limit policy has changed, update the policy
         if policy != self.policy:
@@ -103,22 +103,36 @@ class RateLimitedClient:
         if remaining < self.remaining_requests:
             self.remaining_requests = remaining
 
-        if request.status_code == 200: # OK
-            response_headers = request.headers
-            response_content = xmltodict.parse(request.text, dict_constructor=dict)
-            return response_headers, response_content
-        elif request.status_code == 429: # We were blocked due to the rate limit
+        # remove html special characters that are not also xml special characters
+        # sometimes the API returns HTML entities in the XML response (e.g. &eacute;)
+        # which cause errors in XML parsing
+        text = response.content.decode('utf-8')
+
+        if response.status_code == 200: # OK
+            response_headers = response.headers
+            try:
+                response_content = xmltodict.parse(text, dict_constructor=dict)
+                return response_headers, response_content
+            except Exception as e:
+                # write text and request.text to separate files for debugging
+                with open("unescaped.txt", "w") as f:
+                    f.write(text)
+                with open("request.txt", "w") as f:
+                    f.write(response.text)
+                raise NSAPIException(0, f"Failed to parse XML response:\n{text}")
+        elif response.status_code == 429: # We were blocked due to the rate limit
             if _retry < MAX_RETRIES:
-                waittime = int(request.headers.get("Retry-after"))
+                waittime = int(response.headers.get("Retry-after"))
                 logger.warning(f"/!\\ Rate limit exceeded. Waiting {waittime} seconds before retrying...")
 
                 time.sleep(waittime)
+                self.remaining_requests = self.limit
                 return self.request(headers = headers, _retry = _retry+1, **kwargs)
             else:
                 raise NSAPIException(0, f"Retrying request failed {MAX_RETRIES} times.")
         else:
-            message = html_to_plaintext(request.text).split("Error:")[0].strip()
-            raise NSAPIException(request.status_code, message)
+            message = html_to_plaintext(text).split("Error:")[0].strip()
+            raise NSAPIException(response.status_code, message)
         
 
 class NationStatesAPI:
@@ -194,11 +208,11 @@ class NationAPI(NationStatesAPI):
         else:
             headers, content = self.request(c=command, **kwargs, mode="prepare")
             if 'ERROR' in content:
-                raise NSAPIException(-1, content['ERROR'])
+                raise NSAPIException(0, content['ERROR'])
             token = content['SUCCESS']
             headers, content = self.request(c=command, **kwargs, mode="execute", token=token)
             if 'ERROR' in content:
-                raise NSAPIException(-1, content['ERROR'])
+                raise NSAPIException(0, content['ERROR'])
             return headers, content['SUCCESS']
 
 
