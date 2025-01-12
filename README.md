@@ -1,3 +1,7 @@
+This is the initial incarnation of the project, kept here for archival purposes.  
+Back then, this repo was still github.com/bekaertruben/ns-census-maximizer.  
+The code is terrible, and I hate looking at it. Just use the main branch, please :)
+
 # Nationstates Census Maximizer
 This is a script that solves a nation's issues by attempting to maximise the world census scales of your choosing.
 
