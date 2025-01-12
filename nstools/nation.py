@@ -80,7 +80,9 @@ class Nation:
         self.founded = int(data[0])
 
         self.census_data = {
-            census_id_to_name[int(scale['@id'])] : float(scale['SCORE'])
+            census_id_to_name[int(scale['@id'])]: float(scale['SCORE']) if scale['SCORE'] != None else None
+            # if a nation is young, the api will sometimes respond with "None" instead of a score
+            # especially for world assembly endorsements
             for scale in data[1]['SCALE']
         }
 
@@ -106,7 +108,7 @@ class Nation:
             }
         else:
             self.deaths = {
-                data[7]['CAUSE']['@type'] : float(data[7]['CAUSE']['#text'])
+                data[7]['CAUSE']['@type']: float(data[7]['CAUSE']['#text'])
             }
 
         self.wa = data[8] in ("WA Member", "WA Delegate")
