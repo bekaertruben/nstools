@@ -113,11 +113,6 @@ class RateLimitedClient:
                 response_content = xmltodict.parse(text, dict_constructor=dict)
                 return response_headers, response_content
             except Exception as e:
-                # write text and request.text to separate files for debugging
-                with open("unescaped.txt", "w") as f:
-                    f.write(text)
-                with open("request.txt", "w") as f:
-                    f.write(response.text)
                 raise NSAPIException(0, f"Failed to parse XML response:\n{text}")
         elif response.status_code == 429: # We were blocked due to the rate limit
             if _retry < MAX_RETRIES:
