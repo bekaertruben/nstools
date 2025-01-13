@@ -32,4 +32,4 @@ build-backend = "setuptools.build_meta"
 packages = ["nstools"]
 
 [tool.setuptools.package-data]
-"nstools" = ["census_names.yaml"]
+"nstools" = ["data/census_names.yaml", "data/html_escape_characters.yaml"]

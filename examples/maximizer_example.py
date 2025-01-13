@@ -18,7 +18,7 @@ with open("maximizer_weights.yaml", "r") as f:
 
 ##### SET UP MAXIMIZER #####
 
-api = NationStatesAPI("bekaertruben@gmail.com [Vicken]")
+api = NationStatesAPI("youremailhere@domain.com [main: Testlandia]")
 nation = Nation(api.nation("Testlandia", password="******"))
 
 scorer = NormalizedScorer(census_mean, census_std, **maximizer_weights)
