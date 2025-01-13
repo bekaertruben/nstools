@@ -15,7 +15,7 @@ _data = pkgutil.get_data(__name__, "data/html_escape_characters.yaml")
 html_escape_characters = yaml.safe_load(_data)
 entities_to_escape = {
     k: v for k, v in html_escape_characters.items()
-    if not any(c in k for c in ("&", "<", ">", '"', "'"))
+    if not any(c in v for c in ("&", "<", ">", '"', "'"))
 }
 del _data
 
