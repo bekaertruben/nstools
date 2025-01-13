@@ -73,7 +73,7 @@ class RateLimitedClient:
         # If the rate limit has been exceeded, wait until the reset time
         if self.remaining_requests <= 0:
             waittime = (self.reset_time - datetime.datetime.now()).total_seconds()
-            logger.warning(f"/!\\ Rate limit reached. Waiting {round(waittime)} seconds before continuing...")
+            logger.warning(f"⚠️ Rate limit reached. Waiting {round(waittime)} seconds before continuing...")
             time.sleep(waittime)
             self.remaining_requests = self.limit
             self.reset_time = datetime.datetime.now() + datetime.timedelta(seconds=self.window)
@@ -103,9 +103,8 @@ class RateLimitedClient:
         if remaining < self.remaining_requests:
             self.remaining_requests = remaining
 
-        # remove html special characters that are not also xml special characters
-        # sometimes the API returns HTML entities in the XML response (e.g. &eacute;)
-        # which cause errors in XML parsing
+        # sometimes the API returns HTML entities in the XML response(e.g. &eacute;) which cause errors in XML parsing
+        # but we can't use html.unescape, because we need to keep the XML special characters escaped
         text = unescape(response.content.decode('utf-8'))
 
         if response.status_code == 200: # OK
@@ -123,7 +122,7 @@ class RateLimitedClient:
         elif response.status_code == 429: # We were blocked due to the rate limit
             if _retry < MAX_RETRIES:
                 waittime = int(response.headers.get("Retry-after"))
-                logger.warning(f"/!\\ Rate limit exceeded. Waiting {waittime} seconds before retrying...")
+                logger.warning(f"⚠️ Rate limit exceeded. Waiting {waittime} seconds before retrying...")
 
                 time.sleep(waittime)
                 self.remaining_requests = self.limit
