@@ -126,6 +126,9 @@ class RateLimitedClient:
             else:
                 raise NSAPIException(0, f"Retrying request failed {MAX_RETRIES} times.")
         
+        elif response.status_code == 524:
+            raise NSAPIException(524, "The server took too long to respond.")
+
         else:
             message = html_to_plaintext(text).split("Error:")[0].strip()
             raise NSAPIException(response.status_code, message)
