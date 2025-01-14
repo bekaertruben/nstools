@@ -83,37 +83,38 @@ class RateLimitedClient:
         response = self.session.get(url, headers=headers)
         self.remaining_requests -= 1
 
-        # Check headers for rate limit information
-        date = response.headers.get("Date")
-        policy = response.headers.get("Ratelimit-Policy")
-        seconds_until_reset = int(response.headers.get('Ratelimit-Reset'))
-        remaining = int(response.headers.get('RateLimit-Remaining'))
-
-        # If the rate limit policy has changed, update the policy
-        if policy != self.policy:
-            self.policy = policy
-            self.limit, self.window = map(int, self.policy.split(";w="))
-
-        # Update the rate limit counters
-        response_time = datetime.datetime.strptime(date, '%a, %d %b %Y %H:%M:%S %Z')
-        resettime = response_time + datetime.timedelta(seconds=seconds_until_reset + 0.5)
-        if resettime > self.reset_time:
-            self.reset_time = resettime
-    
-        if remaining < self.remaining_requests:
-            self.remaining_requests = remaining
-
         # sometimes the API returns HTML entities in the XML response(e.g. &eacute;) which cause errors in XML parsing
         # but we can't use html.unescape, because we need to keep the XML special characters escaped
         text = unescape(response.content.decode('utf-8'))
 
         if response.status_code == 200: # OK
+            # Check headers for rate limit information
+            date = response.headers.get("Date")
+            policy = response.headers.get("Ratelimit-Policy")
+            seconds_until_reset = int(response.headers.get('Ratelimit-Reset'))
+            remaining = int(response.headers.get('RateLimit-Remaining'))
+
+            # If the rate limit policy has changed, update the policy
+            if policy != self.policy:
+                self.policy = policy
+                self.limit, self.window = map(int, self.policy.split(";w="))
+
+            # Update the rate limit counters
+            response_time = datetime.datetime.strptime(date, '%a, %d %b %Y %H:%M:%S %Z')
+            resettime = response_time + datetime.timedelta(seconds=seconds_until_reset + 0.5)
+            if resettime > self.reset_time:
+                self.reset_time = resettime
+        
+            if remaining < self.remaining_requests:
+                self.remaining_requests = remaining
+
             response_headers = response.headers
             try:
                 response_content = xmltodict.parse(text, dict_constructor=dict)
                 return response_headers, response_content
             except Exception as e:
                 raise NSAPIException(0, f"Failed to parse XML response:\n{text}")
+        
         elif response.status_code == 429: # We were blocked due to the rate limit
             if _retry < MAX_RETRIES:
                 waittime = int(response.headers.get("Retry-after"))
@@ -124,6 +125,7 @@ class RateLimitedClient:
                 return self.request(headers = headers, _retry = _retry+1, **kwargs)
             else:
                 raise NSAPIException(0, f"Retrying request failed {MAX_RETRIES} times.")
+        
         else:
             message = html_to_plaintext(text).split("Error:")[0].strip()
             raise NSAPIException(response.status_code, message)

@@ -19,6 +19,11 @@ entities_to_escape = {
 }
 del _data
 
+_data = pkgutil.get_data(__name__, "data/census_distribution.yaml")
+census_distribution = yaml.safe_load(_data)
+census_mean = {c: census_distribution[c][0] for c in census_names}
+census_std = {c: census_distribution[c][1] for c in census_names}
+del _data
 
 def shard_key(shard):
     """ Map a shard name to the response key """

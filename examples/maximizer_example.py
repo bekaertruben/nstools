@@ -4,24 +4,15 @@ from nstools.census_maximizer import *
 import pandas as pd
 import yaml
 
-##### LOAD DATA #####
-
-df = pd.read_feather("../data/nations.feather") # find the fine on the github releases tab
-df = df[df.columns[df.columns.str.startswith("census/")]]
-df.columns = df.columns.str.replace("census/", "")
-
-census_mean = df.mean(axis=0).to_dict()
-census_std = df.std(axis=0).to_dict()
-
-with open("maximizer_weights.yaml", "r") as f:
-    maximizer_weights = yaml.safe_load(f)
-
 ##### SET UP MAXIMIZER #####
 
 api = NationStatesAPI("youremailhere@domain.com [main: Testlandia]")
 nation = Nation(api.nation("Testlandia", password="******"))
 
-scorer = NormalizedScorer(census_mean, census_std, **maximizer_weights)
+with open("maximizer_weights.yaml", "r") as f:
+    maximizer_weights = yaml.safe_load(f)
+
+scorer = NormalizedScorer(**maximizer_weights)
 predictor = TrotterdamPredictor()
 maximizer = CensusMaximizer(nation, predictor, scorer)
 

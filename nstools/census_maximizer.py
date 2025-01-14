@@ -1,6 +1,6 @@
 from nstools.nation import Nation
 from nstools.trotterdam import TrotterdamIssue, PolicyChange
-from nstools.utils import census_names
+from nstools.utils import census_names, census_mean, census_std
 from copy import deepcopy
 
 
@@ -161,21 +161,19 @@ class TrotterdamPredictor(Predictor):
 
 
 class NormalizedScorer(Scorer):
-    def __init__(self, census_mean, census_std, census_weights: dict = None, policy_weights: dict = None, allow_WA_resignation=False):
+    def __init__(self, census_weights: dict = None, policy_weights: dict = None, allow_WA_resignation=False):
         if census_weights is None:
             census_weights = { census_name: 1 for census_name in census_names }
         if policy_weights is None:
             policy_weights = {}
 
-        self.census_mean = census_mean
-        self.census_std = census_std
         self.census_weights = census_weights
         self.policy_weights = policy_weights
         self.allow_WA_resignation = allow_WA_resignation
 
     def score_nation(self, nation_dict):
         census_score = sum(
-            (value - self.census_mean[census_name]) / self.census_std[census_name]
+            (value - census_mean[census_name]) / census_std[census_name]
             * (self.census_weights[census_name] if census_name in self.census_weights else 1)
             for census_name, value in nation_dict['census'].items()
         )
@@ -188,7 +186,7 @@ class NormalizedScorer(Scorer):
 
     def score_prediction(self, nation_dict, prediction: OutcomePrediction):
         census_score = sum(
-            value / self.census_std[census_name]
+            value / census_std[census_name]
             * (self.census_weights[census_name] if census_name in self.census_weights else 1)
             for census_name, value in prediction.census_changes.items()
         )
