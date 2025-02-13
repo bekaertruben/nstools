@@ -25,8 +25,9 @@ class TrotterdamIssue:
 
         page = requests.get(base_url.format(issue_id = issue_id))
         self.status = page.status_code
-        if (self.status) != 200:
-            return
+        if self.status == 404:
+            raise ValueError(f"Issue with ID {issue_id} not found (Trotterdam may be out of date)")
+
         doc = lh.fromstring(page.content)
         self.title  = doc.findtext('.//title')
         tr_elements = doc.xpath('//tr')
