@@ -150,13 +150,17 @@ class Issue:
         self.text = api_response['TEXT']
         self.author = api_response['AUTHOR']
         self.editor = api_response['EDITOR'] if 'EDITOR' in api_response else None
-        self.options = {
-            int(option['@id']): option['#text']
-            for option in api_response['OPTION']
-        }
         self.open = True
 
-        pictures = []
+        _options = api_response['OPTION']
+        if not isinstance(_options, list):
+            _options = [_options]
+        self.options = {
+            int(option['@id']): option['#text']
+            for option in _options
+        }
+
+        pictures = [] # usually there are 2, but apparently not always
         i = 1
         while f"PIC{i}" in api_response:
             pictures.append(api_response[f"PIC{i}"])
