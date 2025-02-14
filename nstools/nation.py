@@ -152,13 +152,15 @@ class Issue:
         self.editor = api_response['EDITOR'] if 'EDITOR' in api_response else None
         self.open = True
 
-        _options = api_response['OPTION']
-        if not isinstance(_options, list):
-            _options = [_options]
-        self.options = {
-            int(option['@id']): option['#text']
-            for option in _options
-        }
+        if 'OPTION' not in api_response: # no available options
+            self.options = {}
+        elif isinstance(api_response['OPTION'], dict): # only one option
+            self.options = {int(api_response['OPTION']['@id']): api_response['OPTION']['#text']}
+        else:
+            self.options = {
+                int(option['@id']): option['#text']
+                for option in api_response['OPTION']
+            }
 
         pictures = [] # usually there are 2, but apparently not always
         i = 1

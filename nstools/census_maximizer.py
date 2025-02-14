@@ -85,15 +85,13 @@ class CensusMaximizer:
 
             initial_dict = self.nation.dict()
 
-            option_scores = {}
+            option_scores = {-1: 0} # dismissing the issue should always have a change of 0
             for option_id, option_text in issue.options.items():
                 prediction = self.predictor(deepcopy(initial_dict), issue, option_id)
                 score = self.scorer.score_prediction(deepcopy(initial_dict), prediction)
                 option_scores[option_id] = score
             
-            best_option = max(option_scores, key=option_scores.get)
-
-            choice = best_option if option_scores[best_option] > 0 else -1
+            choice = max(option_scores, key=option_scores.get)
             issue.answer(choice)
 
             if choice != -1:
