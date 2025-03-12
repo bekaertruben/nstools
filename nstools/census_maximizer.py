@@ -117,6 +117,24 @@ class TrotterdamPredictor(Predictor):
     
     def __call__(self, nation_dict, issue, option_id):
         trotterdam_issue = self.get_trotterdam_issue(issue.id)
+
+        if max(issue.options.keys()) > max(trotterdam_issue.outcomes.keys()):
+            # There is a misalignment between the option ids of the issue and the Trotterdam issue
+
+            is_seq_1 = all(i in issue.options for i in range(option_id+1))
+            is_seq_2 = all(i in trotterdam_issue.outcomes for i in range(option_id+1))
+
+            if len(issue.options) == len(trotterdam_issue.outcomes):
+                # If the amount of options still matches up, then there is only one possible way for them to correspond
+                option_idx = list(issue.options.keys()).index(option_id)
+                option_id = list(trotterdam_issue.outcomes.keys())[option_idx]
+
+            elif is_seq_1 and is_seq_2:
+                pass # we can just ignore the misalignment, because it is beyond the point we care about
+
+            else:
+                raise ValueError(f"The option ids of issue {issue.id} and the Trotterdam issue do not match up and cannot be trivially realigned.")
+
         trotterdam_outcome = trotterdam_issue.outcomes[option_id]
 
         census_change = {census_name: 0 for census_name in census_names}
